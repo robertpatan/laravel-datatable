@@ -77,3 +77,56 @@ public function listUsers($fields = [], $withOffset = true)
         return $dtData;
     }
 ```
+### Matching datatable properties with the correct sql table column and with the appropriate operator
+```
+/**
+     * @return array
+     */
+    protected function getDataTableModelColumns()
+    {
+        return [
+            'name'       => [
+                'operator'     => DataTableAdapter::LIKE_LOOSE_OPERATOR,   //Optional default =
+                'model_column' => \DB::raw('CONCAT(first_name, \' \', last_name)'),   //Required
+            ],
+            'email'      => [
+                'operator'     => DataTableAdapter::LIKE_LOOSE_OPERATOR,
+                'model_column' => 'users.email',
+            ],
+            'status'     => ['model_column' => 'users.is_active'],
+        ];
+    }
+```
+### Custom Filtering fields
+```
+ /**
+     * Prepare column condition for filtering
+     *
+     * @param $filters
+     *
+     * @return array
+     */
+    protected function setColumnFilter($filters)
+    {
+        $rules = [];
+        $filters = array_filter($filters, function ($value) {
+            return $value != null || $value != '';
+        });
+
+        if (!empty($filters)) {
+
+            if (isset($filters['status'])) {
+                $rules['status'] = [
+                    'operator' => DataTableAdapter::EQ_OPERATOR,
+                    'value'    => $filters['status'],
+                    'column'   => 'users.is_active',
+                ];
+            }
+        }
+
+        return $rules;
+    }
+```
+
+
+
